@@ -1,0 +1,155 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title>NiFi Design Automation Enables DataOps</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="apple-touch-icon" href="../../../icon.png">
+  <!-- Place favicon.ico in the root directory -->
+
+  <link rel="stylesheet" href="../../../css/normalize.css">
+  <link rel="stylesheet" href="../../../css/main.css">
+
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+  <!--[if IE]>
+    <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+  <![endif]-->
+<h1>NiFi Design Automation Enables DataOps</h1>
+<p>Yesterday during a discussion with a prospective partner I was asked a question: &quot;You have a tight deadline approaching. Which one would you choose - deliver on time or deliver with high quality?&quot; Why would I have to choose when we could have both - eat the cake and have it! This is the story we shared at the <a href='https://dataworkssummit.com/barcelona-2019/session/data-acquisition-automation-for-nifiin-a-hybrid-cloud-environment-the-path-towards-dataops/'>Dataworks Conference European Edition 2019 in Barcelona</a>. </p>
+<p>In a recent data integration project at a major telecom company after almost a year of development the data acquisition backlog still keeps growing while the project is at its finish - literally next Monday.</p>
+<h2>Where the Backlog Items Come From?</h2>
+<p>The data acquisition system is <a href='http://nifi.apache.org/'>Apache NiFi</a>. To find a solution, it would be very useful to perform an analysis of our NiFi journey over the past year. The primary question is where the effort goes, which are the major sources for backlog items, preventing us from moving to support phase? Performing the review we identify 4 major scenarios as sources for the backlog.</p>
+<h3>Scenario 1: Requirements Change</h3>
+<p>Here is an example of requirements changes which required significant rework:</p>
+<ul>
+<li><p>Change the type of the data stream sink (stream target).</p>
+<ul>
+<li>HDFS to Azure BLOB</li>
+<li>Azure BLOB to Azure Data Lake Store Gen 1 (Gen 2 currently)</li>
+<li>Write at the same time to multiple streams.</li>
+
+</ul>
+</li>
+<li><p>Change the stream source type.</p>
+<ul>
+<li>Switch from file-based (HDFS) legacy source to file-based (SFTP) source, compression method and serialization format changed, directory structure changed.</li>
+<li>Switch from file-based (SFTP) batch-oriented to real-time message-based (Kafka).</li>
+
+</ul>
+</li>
+<li><p>All the data at rest must be anonymized.</p>
+</li>
+
+</ul>
+<h3>Scenario 4: Onboard New Application</h3>
+<p>Typically in enterprise environment resources are shared between applications. This is very often the case with data acquisition systems, like NiFi, Informatica, Data Stage etc. Here are some challenges:</p>
+<ul>
+<li>Multiple teams share the same environment stack.</li>
+<li>Modern data analytics require agile, iterative approach. The need for rapid access to the data is very important to enable problem analysis and solution definition.</li>
+<li>Waiting months for a feature/change to be implemented is no longer acceptable. Original requirements and the need might (and they do) change significantly during that time. </li>
+
+</ul>
+<h3>Scenario 3: Technology Evolution</h3>
+<p>The dynamics of the technologies require that we keep our data pipelines updated.</p>
+<ul>
+<li>Incompatibilities between versions. This is a very common problem with open source products, even when it comes to minor version upgrades.</li>
+<li>Retiring of technologies. Could be as simple as replacing one processing component with another or as severe as completely decommissioning a (originally very promising) technology after a couple of years.</li>
+<li>Shifting from on-premise to cloud. The technology stack is usually different.</li>
+
+</ul>
+<h3>Scenario 4: Continuous Refactoring</h3>
+<p>Over the time we identify different, more efficient, solutions to original problems. Design patterns evolve, conventions change. These call for refactoring. From technical perspective refactoring is very important, it reduces the complexity, improves flexibility, maintainability and many, many other -ilities. Here are some reasons for refactoring:</p>
+<ul>
+<li>Data processing design was changed which requires change to the upstream acquisition design.</li>
+<li>Logging and monitoring capabilities are required to answer questions like: &quot;How you guarantee the data is delivered?&quot; &quot;Why the data in the data lake doesn&#39;t match the source data?&quot;, etc.</li>
+
+</ul>
+<p>Although very important from technical perspective, refactoring is usually considered with low business value. Requests for funding are rejected &quot;I was expecting this from the very beginning&quot;.</p>
+<h2>Problem Analysis</h2>
+<p>Reading the scenarios, multiple problems could be identified. Architect, senior software or data engineer would recognize design smells, like violation of the DRY (Don&#39;t Repeat Yourself) principle. </p>
+<p>At the bottom line we are trying to optimize the cost. This allows us to think about our problem as optimization problem. Common optimization approach is to:</p>
+<ol start='' >
+<li>Identify the root cause(s) for the problem. We call them issues.</li>
+<li>Quantify the contribution of each issue in the problem by assigning some significance metric. E.g. execution duration, throughput etc.</li>
+<li>Prioritize the issue list. Simple, yet effective technique is to order the list in descending order of the significance metric.</li>
+<li>Start with the issue with highest priority - analyze it and resolve it.</li>
+<li>Re-evaluate the problem. Is the problem solved? Is the performance in acceptable range?
+If not, repeat above steps until satisfied or no further optimization is possible.</li>
+
+</ol>
+<p>In our case we could define the problem as: <em>The data acquisition backlog keeps growing over time</em>. The issue with highest significance is that <em>once created, streams very quickly turn into legacy, requiring significant effort for continuous refactoring/re-design</em>. This refactoring/re-design doesn&#39;t bring added business value which makes it very difficult or even impossible to secure the necessary budget.</p>
+<p><em>How could we eliminate or at least significantly reduce the additional redesign/re-factoring effort?</em> Finding an answer to this question could resolve our most significant issue.</p>
+<h2>Automation for NiFi Flow Design Optimization</h2>
+<p>During the design of every application, data modelling is applied. What if we require some formal definition of the data model?</p>
+<ul>
+<li>Data description could be stored in machine-readable format, e.g. JSON or relational database.</li>
+<li>Pipeline steps could be templatized.</li>
+<li>Data pipeline could be generated automatically, using the description.</li>
+
+</ul>
+<p>Here is an example of steps and corresponding templates:</p>
+<ul>
+<li><p>Acquire</p>
+<ul>
+<li>Acquire from HDFS</li>
+<li>Acquire from SFTP</li>
+<li>Acquire from Kafka</li>
+
+</ul>
+</li>
+<li><p>Manage</p>
+<ul>
+<li>Unzip</li>
+<li>Untar</li>
+<li>Anonymize</li>
+<li>Concatenate JSON</li>
+<li>Concatenate XML</li>
+<li>Archive</li>
+
+</ul>
+</li>
+<li><p>Store</p>
+<ul>
+<li>Store to HDFS</li>
+<li>Store to Azure Blob</li>
+<li>Store to ADLS</li>
+
+</ul>
+</li>
+
+</ul>
+<p>For the customer project an automated NiFi flow designer - <a href='https://github.com/vancun/nifibuilder'>NiFi Builder</a> was implemented in Python. NiFi Builder uses direct NiFi API calls to manage the NiFi Flow. This is a proprietary implementation. A discussion for publishing the application as open source is in progress.</p>
+<p>After the Barcelona conference, a new, open source, implementation <a href='https://github.com/vancun/nipybuilder'>NiPyBuilder</a> started. Although functionally compatible with the proprietary NiFi Builder, it is not a fork from NiFi Builder, but completely different implementation:</p>
+<ul>
+<li>Use <a href='https://github.com/Chaffelson/nipyapi'>NiPyAPI</a> from Dan Chaffelson to access NiFi REST API.</li>
+<li>Modular design.</li>
+
+</ul>
+<h2>Summary</h2>
+<p>Implemented solution solves not only original problem, but also improves the overall quality of the enterprise data integration ecosystem.</p>
+<ul>
+<li>In practice eliminate the refactoring/re-design (backlog tail) effort. </li>
+<li>Support multiple target platforms, e.g. NiFi, Azure Data Factory, DataStage etc.</li>
+<li>Significantly reduce data-source to data-lake time.</li>
+<li>Automated data on-boarding - first step to the DataOps.</li>
+<li>Improve data governance capabilities - ability to integrate with enterprise data catalog/dictionary.</li>
+<li>Keep technology up-to-date.</li>
+<li>Reduce the data acquisition stream design waste by more than 90%.</li>
+<li>Reduce the need for specialized pipeline design skills.</li>
+<li>Enforce coding standards and conventions.</li>
+
+</ul>
+<h2>Resources</h2>
+<ul>
+<li><a href='https://github.com/Chaffelson/nipyapi'>NiPi API</a> from <a href='https://github.com/Chaffelson'>Dan Chaffelson</a></li>
+
+</ul>
+<p>&nbsp;</p>
+</body>
+</html>
